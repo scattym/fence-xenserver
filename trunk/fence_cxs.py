@@ -92,6 +92,10 @@ def get_power_status(session, uuid = ""):
 			vms = [session.xenapi.VM.get_by_uuid(uuid)]
 		for vm in vms:
 			record = session.xenapi.VM.get_record(vm);
+			# We only want to print out the status for actual virtual machines. The above get_all function
+			# returns any templates and also the control domain. This is one of the reasons the process
+			# takes such a long time to list all VM's. Hopefully there is a way to filter this in the
+			# request packet in the future.
 			if not(record["is_a_template"]) and not(record["is_control_domain"]):
 				name = record["name_label"]
 				print "UUID:", record["uuid"], "NAME:", name, "POWER STATUS:", record["power_state"]
@@ -99,9 +103,6 @@ def get_power_status(session, uuid = ""):
 		print str(exn);
 
 def set_power_status(session, uuid, action):
-	if( uuid == "" ):
-		return;
-	
 	try:
 		vm = session.xenapi.VM.get_by_uuid(uuid)
 		record = session.xenapi.VM.get_record(vm);
