@@ -1,0 +1,14 @@
+#summary How to install on a linux system
+
+= Introduction =
+
+Installation on a linux system.
+
+
+= Details =
+
+Two scripts are required for this fencing app to work. First the script itself (fence_cxs.py) should be copied somewhere into your path. Either /usr/local/sbin or /usr/sbin are good choices.
+
+You then need to put the XenAPI.py script (from http://community.citrix.com/display/xs/XenServer+XenAPI.py or in the SDK available from http://community.citrix.com/display/xs/XenServer+SDK) somewhere in your Python library path. Or simply put it in the same directory as the fence_cxs.py script.
+
+And that should be it. Run _fence_cxs.py -h_ to see the available options.
