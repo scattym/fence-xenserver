@@ -54,13 +54,13 @@ def process_opts():
 		if opt in ("-v", "--verbose"):
 			config["verbose"] = True
 		elif opt in ("-a", "--action"):
-			if arg in ("on", "poweron", "powerup"):
+			if arg.lower() in ("on", "poweron", "powerup"):
 				config["action"] = "on"
-			elif arg in ("off", "poweroff", "powerdown"):
+			elif arg.lower() in ("off", "poweroff", "powerdown"):
 				config["action"] = "off"
-			elif arg in ("reboot", "reset"):
+			elif arg.lower() in ("reboot", "reset", "restart"):
 				config["action"] = "reboot"
-			elif arg in ("status", "powerstatus"):
+			elif arg.lower() in ("status", "powerstatus"):
 				config["action"] = "status"
 		elif opt in ("-h", "--help"):
 			usage()
@@ -72,7 +72,7 @@ def process_opts():
 		elif opt in ("-p", "--password"):
 			config["session_pass"] = arg
 		elif opt in ("-u", "--uuid"):
-			config["uuid"] = arg
+			config["uuid"] = arg.lower()
 		else:
 			assert False, "unhandled option"
 
