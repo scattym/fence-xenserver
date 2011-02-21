@@ -1,9 +1,26 @@
 #!/usr/bin/python
 
 # It's only just begun...
-# Licensing LGPL
 # Current status: completely unusable, try the fence_cxs.py script for the moment. This Red
 # Hat compatible version is just in its' infancy.
+
+# Copyright 2011 Matt Clark
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# Please let me know if you are using this script so that I can work out
+# whether I should continue support for it. mattjclark0407 at hotmail dot com
+
 
 #import sys, re, pexpect
 from fencing import *
@@ -23,9 +40,6 @@ def get_power_status(session, options):
 			return (status=="Running" and "on" or "off")
 	except Exception, exn:
 		print str(exn);
-	# If status of 1 is returned, then the port is on/enabled
-	# any other value is off/disabled.
-	#return (status=="1" and "on" or "off")
 
 # Set the state of the port given in the -n flag of options.
 def set_power_status(session, options):
