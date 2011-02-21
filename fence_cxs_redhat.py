@@ -43,11 +43,11 @@ def get_power_status(session, options):
 
 # Set the state of the port given in the -n flag of options.
 def set_power_status(session, options):
-	if( uuid == "" ):
+	if( options["-u"] == "" ):
 		return;
 	
 	try:
-		vm = session.xenapi.VM.get_by_uuid(uuid)
+		vm = session.xenapi.VM.get_by_uuid(options["-u"])
 		record = session.xenapi.VM.get_record(vm);
 		if not(record["is_a_template"]) and not(record["is_control_domain"]):
 			if( options["-o"] == "on" ):
@@ -64,10 +64,7 @@ def get_outlets_status(session, options):
 	result = {}
 
 	try:
-		if( options["-u"] == "" ):
-			vms = session.xenapi.VM.get_all()
-		else:
-			vms = [session.xenapi.VM.get_by_uuid(uuid)]
+		vms = session.xenapi.VM.get_all()
 		for vm in vms:
 			record = session.xenapi.VM.get_record(vm);
 			if not(record["is_a_template"]) and not(record["is_control_domain"]):
