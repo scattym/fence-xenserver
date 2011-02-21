@@ -25,45 +25,69 @@ from fencing import *
 import XenAPI
 
 # Find the status of the port given in the -u flag of options.
-def get_power_status(session, options):
-	if( options["-u"] == "" ):
-		return "bad"
+def get_power_fn(session, options):
+	uuid = options["-u"].lower()
 	try:
-		vm = session.xenapi.VM.get_by_uuid(options["-u"])
+		# Get a reference to the vm specified in the UUID parameter
+		vm = session.xenapi.VM.get_by_uuid(uuid)
+		# Query the VM for its' associated parameters
 		record = session.xenapi.VM.get_record(vm);
+		# Check that we are not trying to manipulate a template or a control
+		# domain as they show up as VM's with specific properties.
 		if not(record["is_a_template"]) and not(record["is_control_domain"]):
 			status = record["power_state"]
 			print "UUID:", record["uuid"], "NAME:", record["name_label"], "POWER STATUS:", record["power_state"]
-			return (status=="Running" and "on" or "off")
+			# Note that the VM can be in the following states (from the XenAPI document)
+			# Halted: VM is offline and not using any resources.
+			# Paused: All resources have been allocated but the VM itself is paused and its vCPUs are not running
+			# Running: Running
+			# Paused: VM state has been saved to disk and it is nolonger running. Note that disks remain in-use while
+			# We want to make sure that we only return the status "off" if the machine is actually halted as the status
+			# is checked before a fencing action. Only when the machine is Halted is it not consuming resources which
+			# may include whatever you are trying to protect with this fencing action.
+			return (status=="Halted" and "off" or "on")
 	except Exception, exn:
-		print str(exn);
+		print str(exn)
 
-# Set the state of the port given in the -n flag of options.
-def set_power_status(session, options):
-	if( options["-u"] == "" ):
-		return;
+	return "Error"
+
+# Set the state of the port given in the -u flag of options.
+def set_power_fn(session, options):
+	uuid = options["-u"].lower()
+	action = options["-o"].lower()
 	
 	try:
-		vm = session.xenapi.VM.get_by_uuid(options["-u"])
-		record = session.xenapi.VM.get_record(vm);
+		# Get a reference to the vm specified in the UUID parameter
+		vm = session.xenapi.VM.get_by_uuid(uuid)
+		# Query the VM for its' associated parameters
+		record = session.xenapi.VM.get_record(vm)
+		# Check that we are not trying to manipulate a template or a control
+		# domain as they show up as VM's with specific properties.
 		if not(record["is_a_template"]) and not(record["is_control_domain"]):
-			if( options["-o"] == "on" ):
+			if( action == "on" ):
+				# Start the VM 
 				session.xenapi.VM.start(vm, False, True)
-			elif( options["-o"] == "off" ):
+			elif( action == "off" ):
+				# Force shutdown the VM
 				session.xenapi.VM.hard_shutdown(vm)
-			elif( options["-o"] == "reboot" ):
+			elif( action == "reboot" ):
+				# Force reboot the VM
 				session.xenapi.VM.hard_reboot(vm)
 	except Exception, exn:
 		print str(exn);
 
-
-def get_outlets_status(session, options):
+# Function to populate an array of virtual machines and their status
+def get_outlet_list(session, options):
 	result = {}
 
 	try:
+		# Return an array of all the VM's on the host
 		vms = session.xenapi.VM.get_all()
 		for vm in vms:
+			# Query the VM for its' associated parameters
 			record = session.xenapi.VM.get_record(vm);
+			# Check that we are not trying to manipulate a template or a control
+			# domain as they show up as VM's with specific properties.
 			if not(record["is_a_template"]) and not(record["is_control_domain"]):
 				name = record["name_label"]
 				uuid = record["uuid"]
@@ -75,16 +99,22 @@ def get_outlets_status(session, options):
 
 	return result
 
+# Function to initiate the XenServer session via the XenAPI library.
 def connectAndLogin(options):
+	url = options["-s"]
+	username = options["-l"]
+	password = options["-p"]
+
 	try:
-		session = XenAPI.Session(options["-s"]);
-		session.xenapi.login_with_password(options["-l"], options["-p"]);
+		# Create the XML RPC session to the specified URL.
+		session = XenAPI.Session(url);
+		# Login using the supplied credentials.
+		session.xenapi.login_with_password(username, password);
 	except Exception, exn:
 		print str(exn);
 		sys.exit(3);
 	return session;
 
-# Main agent method
 def main():
 
 	device_opt = [ "help", "version", "agent", "quiet", "verbose", "debug", "action",
@@ -106,7 +136,7 @@ def main():
 	xenSession = connectAndLogin(options)
 	
 	# Operate the fencing device
-	result = fence_action(xenSession, options, set_power_status, get_power_status, get_outlets_status)
+	result = fence_action(xenSession, options, set_power_fn, get_power_fn, get_outlet_list)
 
 	sys.exit(result)
 
