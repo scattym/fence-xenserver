@@ -42,40 +42,52 @@ def process_opts():
 		"verbose"	: False
 		}
 		
-	try:
-		opts, args = getopt.getopt(sys.argv[1:], "a:hl:s:p:u:v", ["help", "verbose", "action=", "session-url=", "login-name=", "password=", "uuid="])
-	except getopt.GetoptError, err:
-		# We got an unrecognised option, so print he help message and exit
-		print str(err)
-		usage()
-		sys.exit(1)
-
-	for opt, arg in opts:
-		if opt in ("-v", "--verbose"):
-			config["verbose"] = True
-		elif opt in ("-a", "--action"):
-			if arg.lower() in ("on", "poweron", "powerup"):
-				config["action"] = "on"
-			elif arg.lower() in ("off", "poweroff", "powerdown"):
-				config["action"] = "off"
-			elif arg.lower() in ("reboot", "reset", "restart"):
-				config["action"] = "reboot"
-			elif arg.lower() in ("status", "powerstatus"):
-				config["action"] = "status"
-		elif opt in ("-h", "--help"):
+	if len(sys.argv) > 1:
+		try:
+			opts, args = getopt.getopt(sys.argv[1:], "a:hl:s:p:u:v", ["help", "verbose", "action=", "session-url=", "login-name=", "password=", "uuid="])
+		except getopt.GetoptError, err:
+			# We got an unrecognised option, so print he help message and exit
+			print str(err)
 			usage()
-			sys.exit()
-		elif opt in ("-s", "--session-url"):
-			config["session_url"] = arg
-		elif opt in ("-l", "--login-name"):
-			config["session_user"] = arg
-		elif opt in ("-p", "--password"):
-			config["session_pass"] = arg
-		elif opt in ("-u", "--uuid"):
-			config["uuid"] = arg.lower()
-		else:
-			assert False, "unhandled option"
+			sys.exit(1)
+	
+		for opt, arg in opts:
+			if opt in ("-v", "--verbose"):
+				config["verbose"] = True
+			elif opt in ("-a", "--action"):
+				config["action"] = clean_action(arg)
+			elif opt in ("-h", "--help"):
+				usage()
+				sys.exit()
+			elif opt in ("-s", "--session-url"):
+				config["session_url"] = arg
+			elif opt in ("-l", "--login-name"):
+				config["session_user"] = arg
+			elif opt in ("-p", "--password"):
+				config["session_pass"] = arg
+			elif opt in ("-u", "--uuid"):
+				config["uuid"] = arg.lower()
+			else:
+				assert False, "unhandled option"
+	else:
+	
+		for line in sys.stdin.readlines():
+			line = line.strip()
+			if ((line.startswith("#")) or (len(line) == 0)):
+				continue
+			(name, value) = (line + "=").split("=", 1)
+			value = value[:-1]
+	
+			name = clean_param_name(name)
+	
+			if name == "action":
+				value = clean_action(value)
 
+			if name in config:
+				config[name] = value
+			else:
+				sys.stderr.write("Parse error: Ignoring unknown option '"+line+"'\n")
+	
 	if( config["session_url"] == "" or config["session_user"] == "" or config["session_pass"] == "" ):
 		print "You must specify the session url, username and password.";
 		usage();
@@ -83,6 +95,28 @@ def process_opts():
 
 	return config
 
+def clean_action(action):
+	if action.lower() in ("on", "poweron", "powerup"):
+		return "on"
+	elif action.lower() in ("off", "poweroff", "powerdown"):
+		return "off"
+	elif action.lower() in ("reboot", "reset", "restart"):
+		return "reboot"
+	elif action.lower() in ("status", "powerstatus", "list"):
+		return "status"
+	return ""
+
+def clean_param_name(name):
+	if name.lower() in ("action", "operation", "op"):
+		return "action"
+	elif name.lower() in ("session_user", "login", "login-name", "login_name", "user", "username", "session-user"):
+		return "session_user"
+	elif name.lower() in ("session_pass", "pass", "passwd", "password", "session-pass"):
+		return "session_pass"
+	elif name.lower() in ("session_url", "url", "session-url"):
+		return "session_url"
+	return ""
+	
 # Print the power status of a VM. If no UUID is given, then all VM's are queried
 def get_power_status(session, uuid = ""):
 	try:
