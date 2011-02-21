@@ -21,11 +21,8 @@
 # Please let me know if you are using this script so that I can work out
 # whether I should continue support for it. mattjclark0407 at hotmail dot com
 
-
-#import sys, re, pexpect
 from fencing import *
 import XenAPI
-
 
 # Find the status of the port given in the -u flag of options.
 def get_power_status(session, options):
@@ -81,10 +78,6 @@ def get_outlets_status(session, options):
 def connectAndLogin(options):
 	try:
 		session = XenAPI.Session(options["-s"]);
-	except Exception, exn:
-		print str(exn);
-		sys.exit(3);
-	try:
 		session.xenapi.login_with_password(options["-l"], options["-p"]);
 	except Exception, exn:
 		print str(exn);
@@ -94,11 +87,10 @@ def connectAndLogin(options):
 # Main agent method
 def main():
 
-	device_opt = [ "help", "version", "agent", "quiet", "verbose", "debug",
-		       "action", "login", "passwd", "passwd_script",
-		       "test", "separator", "no_login", "no_password",
-		       "inet4_only","inet6_only",
-		       "power_timeout", "shell_timeout", "login_timeout", "power_wait", "session_url", "uuid" ]
+	device_opt = [ "help", "version", "agent", "quiet", "verbose", "debug", "action",
+			"login", "passwd", "passwd_script", "test", "separator", "no_login",
+			"no_password", "inet4_only","inet6_only", "power_timeout",
+			"shell_timeout", "login_timeout", "power_wait", "session_url", "uuid" ]
 
 	atexit.register(atexit_handler)
 
