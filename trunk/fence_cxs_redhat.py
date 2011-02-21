@@ -15,12 +15,12 @@ def get_power_status(session, options):
 	if( options["-u"] == "" ):
 		return "bad"
 	try:
-		vms = session.xenapi.VM.get_by_uuid(uuid)
+		vm = session.xenapi.VM.get_by_uuid(options["-u"])
 		record = session.xenapi.VM.get_record(vm);
 		if not(record["is_a_template"]) and not(record["is_control_domain"]):
 			status = record["power_state"]
-			print "UUID:", record["uuid"], "NAME:", name, "POWER STATUS:", record["power_state"]
-			return (status=="on" and "on" or "off")
+			print "UUID:", record["uuid"], "NAME:", record["name_label"], "POWER STATUS:", record["power_state"]
+			return (status=="Running" and "on" or "off")
 	except Exception, exn:
 		print str(exn);
 	# If status of 1 is returned, then the port is on/enabled
