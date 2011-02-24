@@ -42,6 +42,7 @@ def process_opts():
 		"verbose"	: False
 		}
 		
+	# If we have at least one argument then we want to parse the command line using getopts
 	if len(sys.argv) > 1:
 		try:
 			opts, args = getopt.getopt(sys.argv[1:], "a:hl:s:p:u:v", ["help", "verbose", "action=", "session-url=", "login-name=", "password=", "uuid="])
@@ -69,6 +70,9 @@ def process_opts():
 				config["uuid"] = arg.lower()
 			else:
 				assert False, "unhandled option"
+	# Otherwise process stdin for parameters. This is to handle the Red Hat clustering
+	# mechanism where by fenced passes in name/value pairs instead of using command line
+	# options.
 	else:
 	
 		for line in sys.stdin.readlines():
@@ -95,6 +99,8 @@ def process_opts():
 
 	return config
 
+# why, well just to be nice. Given an action will return the corresponding
+# value that the rest of the script uses.
 def clean_action(action):
 	if action.lower() in ("on", "poweron", "powerup"):
 		return "on"
@@ -106,6 +112,8 @@ def clean_action(action):
 		return "status"
 	return ""
 
+# why, well just to be nice. Given a parameter will return the corresponding
+# value that the rest of the script uses.
 def clean_param_name(name):
 	if name.lower() in ("action", "operation", "op"):
 		return "action"
@@ -120,6 +128,8 @@ def clean_param_name(name):
 # Print the power status of a VM. If no UUID is given, then all VM's are queried
 def get_power_status(session, uuid = ""):
 	try:
+		# If the UUID hasn't been set, then output the status of all
+		# valid virtual machines.
 		if( uuid == "" ):
 			vms = session.xenapi.VM.get_all()
 		else:
