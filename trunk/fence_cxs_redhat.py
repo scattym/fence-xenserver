@@ -24,6 +24,7 @@
 from fencing import *
 import XenAPI
 
+EC_BAD_SESSION 		= 1
 # Find the status of the port given in the -u flag of options.
 def get_power_fn(session, options):
 	uuid = options["-u"].lower()
@@ -100,7 +101,7 @@ def get_outlet_list(session, options):
 	return result
 
 # Function to initiate the XenServer session via the XenAPI library.
-def connectAndLogin(options):
+def connect_and_login(options):
 	url = options["-s"]
 	username = options["-l"]
 	password = options["-p"]
@@ -112,7 +113,12 @@ def connectAndLogin(options):
 		session.xenapi.login_with_password(username, password);
 	except Exception, exn:
 		print str(exn);
-		sys.exit(3);
+		# http://sources.redhat.com/cluster/wiki/FenceAgentAPI says that for no connectivity
+		# the exit value should be 1. It doesn't say anything about failed logins, so 
+		# until I hear otherwise it is best to keep this exit the same to make sure that
+		# anything calling this script (that uses the same information in the web page
+		# above) knows that this is an error condition, not a msg signifying a down port.
+		sys.exit(EC_BAD_SESSION); 
 	return session;
 
 def main():
@@ -133,7 +139,7 @@ def main():
 	docs["longdesc"] = "fence_cxs_redhat" 
 	show_docs(options, docs)
 
-	xenSession = connectAndLogin(options)
+	xenSession = connect_and_login(options)
 	
 	# Operate the fencing device
 	result = fence_action(xenSession, options, set_power_fn, get_power_fn, get_outlet_list)
