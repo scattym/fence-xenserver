@@ -1,0 +1,25 @@
+Installation  
+How to install on a linux system
+Introduction
+Installation on a linux system.
+
+Details
+There are two version of the script in the repository, a command line version and a Red Hat Cluster Suite compatible script. (I hope to eventually merge the two).
+
+1) Installation of the generic script fence_cxs.py
+
+Two scripts are required for this fencing app to work. First the script itself (fence_cxs.py) should be copied somewhere into your path. Either /usr/local/sbin or /usr/sbin are good choices.
+
+You then need to put the XenAPI.py script (from http://community.citrix.com/display/xs/XenServer+XenAPI.py or in the SDK available from http://community.citrix.com/display/xs/XenServer+SDK) somewhere in your Python library path. Or simply put it in the same directory as the fence_cxs.py script.
+
+And that should be it. Run fence_cxs.py -h to see the available options.
+
+2) Installation of the Red Hat style script fence_cxs_redhat.py
+
+Three scripts are required for this script to run. First the script itself (fence_cxs_redhat.py) should be copied somewhere into your path. Either /usr/local/sbin or /usr/sbin are good choices.
+
+You then need to put the XenAPI.py script/library (from http://community.citrix.com/display/xs/XenServer+XenAPI.py or in the SDK available from http://community.citrix.com/display/xs/XenServer+SDK) somewhere in your Python library path. Or simply put it in the same directory as the fence_cxs_redhat.py script.
+
+The final script/library is the fencing.py script that is available as one of the Red Hat Cluster rpms. I think it's part of the cman package. If you have installed Red Hat clustering, it is most likely already on your system.
+
+And that should be it. Run fence_cxs_redhat.py -h to see the available options.
