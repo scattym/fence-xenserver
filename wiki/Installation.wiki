@@ -23,5 +23,6 @@ Three scripts are required for this script to run. First the script itself (fenc
 You then need to put the XenAPI.py script/library (from http://community.citrix.com/display/xs/XenServer+XenAPI.py or in the SDK available from http://community.citrix.com/display/xs/XenServer+SDK) somewhere in your Python library path. Or simply put it in the same directory as the fence_cxs_redhat.py script.
 
 The final script/library is the fencing.py script that is available as one of the Red Hat Cluster rpms. I think it's part of the cman package. If you have installed Red Hat clustering, it is most likely already on your system.
+UPDATE: I ended up having to update this script, so I have included it in the 0.3 version. The fencing.py library was not written by me, credit for that one goes to someone in Red Hat I think. Because I have made a couple of changes to this file, I have included it in the repository.
 
 And that should be it. Run _fence_cxs_redhat.py -h_ to see the available options.
