@@ -25,12 +25,12 @@ from fencing import *
 import XenAPI
 
 EC_BAD_SESSION 		= 1
-# Find the status of the port given in the -u flag of options.
+# Find the status of the port given in the -U flag of options.
 def get_power_fn(session, options):
-	uuid = options["-u"].lower()
+	#uuid = options["-U"].lower()
 	try:
-		# Get a reference to the vm specified in the UUID parameter
-		vm = session.xenapi.VM.get_by_uuid(uuid)
+		# Get a reference to the vm specified in the UUID or vm_name parameter
+		vm = return_vm_reference(session, options)
 		# Query the VM for its' associated parameters
 		record = session.xenapi.VM.get_record(vm);
 		# Check that we are not trying to manipulate a template or a control
@@ -42,7 +42,7 @@ def get_power_fn(session, options):
 			# Halted: VM is offline and not using any resources.
 			# Paused: All resources have been allocated but the VM itself is paused and its vCPUs are not running
 			# Running: Running
-			# Paused: VM state has been saved to disk and it is nolonger running. Note that disks remain in-use while
+			# Paused: VM state has been saved to disk and it is nolonger running. Note that disks remain in-Use while
 			# We want to make sure that we only return the status "off" if the machine is actually halted as the status
 			# is checked before a fencing action. Only when the machine is Halted is it not consuming resources which
 			# may include whatever you are trying to protect with this fencing action.
@@ -52,14 +52,14 @@ def get_power_fn(session, options):
 
 	return "Error"
 
-# Set the state of the port given in the -u flag of options.
+# Set the state of the port given in the -U flag of options.
 def set_power_fn(session, options):
-	uuid = options["-u"].lower()
+	uuid = options["-U"].lower()
 	action = options["-o"].lower()
 	
 	try:
-		# Get a reference to the vm specified in the UUID parameter
-		vm = session.xenapi.VM.get_by_uuid(uuid)
+		# Get a reference to the vm specified in the UUID or vm_name parameter
+		vm = return_vm_reference(session, options)
 		# Query the VM for its' associated parameters
 		record = session.xenapi.VM.get_record(vm)
 		# Check that we are not trying to manipulate a template or a control
@@ -121,12 +121,39 @@ def connect_and_login(options):
 		sys.exit(EC_BAD_SESSION); 
 	return session;
 
+# return a reference to the VM by either using the UUID or the vm_name. If the UUID is set then
+# this is tried first as this is the only properly unique identifier.
+# Exceptions are not handled in this function, code that calls this must be ready to handle them.
+def return_vm_reference(session, options):
+	# Case where the UUID has been specified
+	if options.has_key("-U"):
+		uuid = options["-U"].lower()
+		return session.xenapi.VM.get_by_uuid(uuid)
+
+	# Case where the vm_name has been specified
+	if options.has_key("-n"):
+		vm_name = options["-n"]
+		vm_arr = session.xenapi.VM.get_by_name_label(vm_name)
+		# Need to make sure that we only have one result as the vm_name may
+		# not be unique. Average case, so do it first.
+		if len(vm_arr) == 1:
+			return vm_arr[0]
+		else:
+			# TODO: Need to either fail usage or raise exception
+			# at least say something like none or multiple vms found
+			# with that name.
+			# if len(vm_arr) == 0:
+			#	no vm's found
+			# else:
+			# 	multiple vms found with the same name, use uuid instead
+			return None
+
 def main():
 
 	device_opt = [ "help", "version", "agent", "quiet", "verbose", "debug", "action",
-			"login", "passwd", "passwd_script", "test", "separator", "no_login",
-			"no_password", "power_timeout", "shell_timeout", "login_timeout",
-			"power_wait", "session_url", "uuid" ]
+			"login", "passwd", "passwd_script", "vm_name", "test", "separator",
+			"no_login", "no_password", "power_timeout", "shell_timeout",
+			"login_timeout", "power_wait", "session_url", "uuid" ]
 
 	atexit.register(atexit_handler)
 

@@ -386,12 +386,19 @@ all_opt = {
                 "required" : "1",
                 "shortdesc" : "The URL of the XenServer host.",
                 "order" : 1},
+        "vm_name" : {
+                "getopt" : "n:",
+                "longopt" : "vm-name",
+                "help" : "-n, --vm-name                  Name of the VM to fence.",
+                "required" : "0",
+                "shortdesc" : "The name of the virual machine to fence.",
+                "order" : 1},
         "uuid" : {
                 "getopt" : "U:",
                 "longopt" : "uuid",
                 "help" : "-U, --uuid                  UUID of the VM to fence.",
-                "required" : "1",
-                "shortdesc" : "The UUID of the VM to fence.",
+                "required" : "0",
+                "shortdesc" : "The UUID of the virtual machine to fence.",
                 "order" : 1}
 }
 
@@ -673,6 +680,10 @@ def check_input(device_opt, opt):
 	if 0 == options.has_key("-a") and 0 == options.has_key("-s"):
 		fail_usage("Failed: You have to enter fence address")
 
+	if (0 == ["list", "monitor"].count(options["-o"].lower())) and device_opt.count("vm_name") and device_opt.count("uuid"):
+		if 0 == options.has_key("-n") and 0 == options.has_key("-U"):
+			fail_usage("Failed: You must specify either UUID or VM name")
+		
 	if (device_opt.count("no_password") == 0):
 		if 0 == device_opt.count("identity_file"):
 			if 0 == (options.has_key("-p") or options.has_key("-S")):
