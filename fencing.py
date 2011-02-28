@@ -387,9 +387,9 @@ all_opt = {
                 "shortdesc" : "The URL of the XenServer host.",
                 "order" : 1},
         "uuid" : {
-                "getopt" : "u:",
+                "getopt" : "U:",
                 "longopt" : "uuid",
-                "help" : "-u, --uuid                  UUID of the VM to fence.",
+                "help" : "-U, --uuid                  UUID of the VM to fence.",
                 "required" : "1",
                 "shortdesc" : "The UUID of the VM to fence.",
                 "order" : 1}
@@ -754,7 +754,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 	
 	## Process options that manipulate fencing device
 	#####
-	if (options["-o"] == "list") and (0 == options["device_opt"].count("port")) and (0 == options["device_opt"].count("partition")) and 0:
+	if (options["-o"] == "list") and (0 == options["device_opt"].count("port")) and (0 == options["device_opt"].count("partition")) and (0 == options["device_opt"].count("uuid")):
 		print "N/A"
 		return
 	elif (options["-o"] == "list" and get_outlet_list == None):
