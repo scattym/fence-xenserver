@@ -27,7 +27,7 @@ def usage():
 	print "    -l : The username for the XenServer host."
 	print "    -p : The password for the XenServer host."
 	print "    -s : The URL of the web interface on the XenServer host."
-	print "    -u : The UUID of the virtual machine to fence or query. Defaults to the empty string which will return"
+	print "    -U : The UUID of the virtual machine to fence or query. Defaults to the empty string which will return"
 	print "         the status of all hosts when action is set to \"status\". If the action is set to \"on|off|reboot\""
 	print "         then the UUID must be specified."
 
@@ -45,7 +45,7 @@ def process_opts():
 	# If we have at least one argument then we want to parse the command line using getopts
 	if len(sys.argv) > 1:
 		try:
-			opts, args = getopt.getopt(sys.argv[1:], "a:hl:s:p:u:v", ["help", "verbose", "action=", "session-url=", "login-name=", "password=", "uuid="])
+			opts, args = getopt.getopt(sys.argv[1:], "a:hl:s:p:U:v", ["help", "verbose", "action=", "session-url=", "login-name=", "password=", "uuid="])
 		except getopt.GetoptError, err:
 			# We got an unrecognised option, so print he help message and exit
 			print str(err)
@@ -66,7 +66,7 @@ def process_opts():
 				config["session_user"] = arg
 			elif opt in ("-p", "--password"):
 				config["session_pass"] = arg
-			elif opt in ("-u", "--uuid"):
+			elif opt in ("-U", "--uuid"):
 				config["uuid"] = arg.lower()
 			else:
 				assert False, "unhandled option"
