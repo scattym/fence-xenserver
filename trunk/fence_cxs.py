@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+#
+#############################################################################
 # Copyright 2011 Matt Clark
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
+#############################################################################
 # Please let me know if you are using this script so that I can work out
 # whether I should continue support for it. mattjclark0407 at hotmail dot com
 

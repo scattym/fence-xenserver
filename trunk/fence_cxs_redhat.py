@@ -1,9 +1,6 @@
 #!/usr/bin/python
-
-# It's only just begun...
-# Current status: completely unusable, try the fence_cxs.py script for the moment. This Red
-# Hat compatible version is just in its' infancy.
-
+#
+#############################################################################
 # Copyright 2011 Matt Clark
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,6 +17,17 @@
 
 # Please let me know if you are using this script so that I can work out
 # whether I should continue support for it. mattjclark0407 at hotmail dot com
+#############################################################################
+
+#############################################################################
+# It's only just begun...
+# Current status: completely usable. This script is now working well and,
+# has a lot of functionality as a result of the fencing.py library and the
+# XenAPI libary.
+
+#############################################################################
+# Please let me know if you are using this script so that I can work out
+# whether I should continue support for it. mattjclark0407 at hotmail dot com
 
 from fencing import *
 import XenAPI
@@ -27,9 +35,7 @@ import XenAPI
 EC_BAD_SESSION 		= 1
 # Find the status of the port given in the -U flag of options.
 def get_power_fn(session, options):
-	#uuid = options["-U"].lower()
-	
-	if( options.has_key("-v") ):
+	if options.has_key("-v"):
 		verbose = True
 	else:
 		verbose = False
@@ -60,9 +66,8 @@ def get_power_fn(session, options):
 
 # Set the state of the port given in the -U flag of options.
 def set_power_fn(session, options):
-	# uuid = options["-U"].lower()
 	action = options["-o"].lower()
-	if( options.has_key("-v") ):
+	if options.has_key("-v"):
 		verbose = True
 	else:
 		verbose = False
@@ -90,7 +95,7 @@ def set_power_fn(session, options):
 # Function to populate an array of virtual machines and their status
 def get_outlet_list(session, options):
 	result = {}
-	if( options.has_key("-v") ):
+	if options.has_key("-v"):
 		verbose = True
 	else:
 		verbose = False
