@@ -28,6 +28,12 @@ EC_BAD_SESSION 		= 1
 # Find the status of the port given in the -U flag of options.
 def get_power_fn(session, options):
 	#uuid = options["-U"].lower()
+	
+	if( options.has_key("-v") ):
+		verbose = True
+	else:
+		verbose = False
+		
 	try:
 		# Get a reference to the vm specified in the UUID or vm_name parameter
 		vm = return_vm_reference(session, options)
@@ -37,7 +43,7 @@ def get_power_fn(session, options):
 		# domain as they show up as VM's with specific properties.
 		if not(record["is_a_template"]) and not(record["is_control_domain"]):
 			status = record["power_state"]
-			print "UUID:", record["uuid"], "NAME:", record["name_label"], "POWER STATUS:", record["power_state"]
+			if verbose: print "UUID:", record["uuid"], "NAME:", record["name_label"], "POWER STATUS:", record["power_state"]
 			# Note that the VM can be in the following states (from the XenAPI document)
 			# Halted: VM is offline and not using any resources.
 			# Paused: All resources have been allocated but the VM itself is paused and its vCPUs are not running
@@ -54,8 +60,12 @@ def get_power_fn(session, options):
 
 # Set the state of the port given in the -U flag of options.
 def set_power_fn(session, options):
-	uuid = options["-U"].lower()
+	# uuid = options["-U"].lower()
 	action = options["-o"].lower()
+	if( options.has_key("-v") ):
+		verbose = True
+	else:
+		verbose = False
 	
 	try:
 		# Get a reference to the vm specified in the UUID or vm_name parameter
@@ -80,6 +90,10 @@ def set_power_fn(session, options):
 # Function to populate an array of virtual machines and their status
 def get_outlet_list(session, options):
 	result = {}
+	if( options.has_key("-v") ):
+		verbose = True
+	else:
+		verbose = False
 
 	try:
 		# Return an array of all the VM's on the host
@@ -94,7 +108,7 @@ def get_outlet_list(session, options):
 				uuid = record["uuid"]
 				status = record["power_state"]
 				result[uuid] = (name, status)
-				print "UUID:", record["uuid"], "NAME:", name, "POWER STATUS:", record["power_state"]
+				if verbose: print "UUID:", record["uuid"], "NAME:", name, "POWER STATUS:", record["power_state"]
 	except Exception, exn:
 		print str(exn);
 

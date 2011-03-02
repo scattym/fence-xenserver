@@ -22,7 +22,7 @@ import XenAPI
 def usage():
 	print "Usage: fence_cxs [-hv] [-a <action>] -l <login username> -p <login password> -s <session url> [-u <UUID>]"
 	print "Where:-"
-	print "    -a : Specifies the action to perfom. Can be any of \"on|off|reboot|status\". Defaults to \"status\"."
+	print "    -a : Specifies the action to perfom. Can be any of \"on|off|reboot|status|list\". Defaults to \"status\"."
 	print "    -h : Print this help message."
 	print "    -l : The username for the XenServer host."
 	print "    -p : The password for the XenServer host."
@@ -39,13 +39,14 @@ def process_opts():
 		"session_user"	: "",
 		"session_pass"	: "",
 		"uuid"		: "",
+		"name"		: "",
 		"verbose"	: False
 		}
 		
 	# If we have at least one argument then we want to parse the command line using getopts
 	if len(sys.argv) > 1:
 		try:
-			opts, args = getopt.getopt(sys.argv[1:], "a:hl:s:p:U:v", ["help", "verbose", "action=", "session-url=", "login-name=", "password=", "uuid="])
+			opts, args = getopt.getopt(sys.argv[1:], "a:hl:n:s:p:U:v", ["help", "verbose", "action=", "session-url=", "login-name=", "name=", "password=", "uuid="])
 		except getopt.GetoptError, err:
 			# We got an unrecognised option, so print he help message and exit
 			print str(err)
@@ -64,6 +65,8 @@ def process_opts():
 				config["session_url"] = arg
 			elif opt in ("-l", "--login-name"):
 				config["session_user"] = arg
+			elif opt in ("-n", "--name"):
+				config["name"] = arg
 			elif opt in ("-p", "--password"):
 				config["session_pass"] = arg
 			elif opt in ("-U", "--uuid"):
@@ -110,7 +113,10 @@ def clean_action(action):
 		return "reboot"
 	elif action.lower() in ("status", "powerstatus", "list"):
 		return "status"
-	return ""
+	else:
+		print "Bad action", action
+		usage()
+		exit(4)
 
 # why, well just to be nice. Given a parameter will return the corresponding
 # value that the rest of the script uses.
@@ -123,17 +129,24 @@ def clean_param_name(name):
 		return "session_pass"
 	elif name.lower() in ("session_url", "url", "session-url"):
 		return "session_url"
-	return ""
+	else:
+		# we should never get here as getopt should handle the checking of this input.
+		print "Bad parameter specified", name
+		usage()
+		exit(5)
 	
 # Print the power status of a VM. If no UUID is given, then all VM's are queried
-def get_power_status(session, uuid = ""):
+def get_power_status(session, uuid = "", name = ""):
 	try:
 		# If the UUID hasn't been set, then output the status of all
 		# valid virtual machines.
-		if( uuid == "" ):
-			vms = session.xenapi.VM.get_all()
-		else:
+		if( len(uuid) > 0 ):
 			vms = [session.xenapi.VM.get_by_uuid(uuid)]
+		elif( len(name) > 0 ):
+			vms = session.xenapi.VM.get_by_name_label(name)
+		else:
+			vms = session.xenapi.VM.get_all()
+
 		for vm in vms:
 			record = session.xenapi.VM.get_record(vm);
 			# We only want to print out the status for actual virtual machines. The above get_all function
@@ -146,17 +159,29 @@ def get_power_status(session, uuid = ""):
 	except Exception, exn:
 		print str(exn);
 
-def set_power_status(session, uuid, action):
+def set_power_status(session, uuid, name, action):
 	try:
-		vm = session.xenapi.VM.get_by_uuid(uuid)
-		record = session.xenapi.VM.get_record(vm);
-		if not(record["is_a_template"]) and not(record["is_control_domain"]):
-			if( action == "on" ):
-				session.xenapi.VM.start(vm, False, True)
-			elif( action == "off" ):
-				session.xenapi.VM.hard_shutdown(vm)
-			elif( action == "reboot" ):
-				session.xenapi.VM.hard_reboot(vm)
+		vm = None
+		if( len(uuid) > 0 ):
+			vm = session.xenapi.VM.get_by_uuid(uuid)
+		elif( len(name) > 0 ):
+			vm_arr = session.xenapi.VM.get_by_name_label(name)
+			if( len(vm_arr) == 1 ):
+				vm = vm_arr[0]
+			else
+				raise Exception("Multiple VM's have that name. Use UUID instead.")
+
+		if( vm != None ):
+			record = session.xenapi.VM.get_record(vm);
+			if not(record["is_a_template"]) and not(record["is_control_domain"]):
+				if( action == "on" ):
+					session.xenapi.VM.start(vm, False, True)
+				elif( action == "off" ):
+					session.xenapi.VM.hard_shutdown(vm)
+				elif( action == "reboot" ):
+					session.xenapi.VM.hard_reboot(vm)
+				else:
+					raise Exception("Bad power status");
 	except Exception, exn:
 		print str(exn);
 	
@@ -168,13 +193,13 @@ def main():
 	session_login(session, config["session_user"], config["session_pass"]);
 
 	if( config["action"] == "status" ):
-		get_power_status(session, config["uuid"])
+		get_power_status(session, config["uuid"], config["name"])
 	else:
 		if( config["verbose"] ):
 			print "Power status before action"
 			get_power_status(session, config["uuid"])
 
-		set_power_status(session, config["uuid"], config["action"])
+		set_power_status(session, config["uuid"], config["name"], config["action"])
 
 		if( config["verbose"] ):
 			print "Power status after action"
