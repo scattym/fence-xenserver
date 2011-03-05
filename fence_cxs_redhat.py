@@ -144,10 +144,23 @@ def connect_and_login(options):
 # this is tried first as this is the only properly unique identifier.
 # Exceptions are not handled in this function, code that calls this must be ready to handle them.
 def return_vm_reference(session, options):
+	if options.has_key("-v"):
+		verbose = True
+	else:
+		verbose = False
+
 	# Case where the UUID has been specified
 	if options.has_key("-U"):
 		uuid = options["-U"].lower()
-		return session.xenapi.VM.get_by_uuid(uuid)
+		# When using the -n parameter for name, we get an error message (in verbose
+		# mode) that tells us that we didn't find a VM. To immitate that here we
+		# need to catch and re-raise the exception produced by get_by_uuid.
+		try:
+			return session.xenapi.VM.get_by_uuid(uuid)
+		except Exception,exn:
+			if verbose: print "No VM's found with a UUID of \"%s\"" %uuid
+			raise
+		
 
 	# Case where the vm_name has been specified
 	if options.has_key("-n"):
@@ -158,14 +171,21 @@ def return_vm_reference(session, options):
 		if len(vm_arr) == 1:
 			return vm_arr[0]
 		else:
-			# TODO: Need to either fail usage or raise exception
-			# at least say something like none or multiple vms found
-			# with that name.
-			# if len(vm_arr) == 0:
-			#	no vm's found
-			# else:
-			# 	multiple vms found with the same name, use uuid instead
-			return None
+			if len(vm_arr) == 0:
+				if verbose: print "No VM's found with a name of \"%s\"" %vm_name
+				# NAME_INVALID used as the XenAPI throws a UUID_INVALID if it can't find
+				# a VM with the specified UUID. This should make the output look fairly
+				# consistent.
+				raise Exception("NAME_INVALID")
+			else:
+				if verbose: print "Multiple VM's have the name \"%s\", use UUID instead" %vm_name
+				raise Exception("MULTIPLE_VMS_FOUND")
+
+	# We should never get to this case as the input processing checks that either the UUID or
+	# the name parameter is set. Regardless of whether or not a VM is found the above if
+	# statements will return to the calling function (either by exception or by a reference
+	# to the VM).
+	raise Exception("VM_LOGIC_ERROR")
 
 def main():
 
