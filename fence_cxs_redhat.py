@@ -201,8 +201,13 @@ def main():
 	options = check_input(device_opt, options)
 
 	docs = { }
-	docs["shortdesc"] = "Fence agent for Citrix XenServer"
-	docs["longdesc"] = "fence_cxs_redhat" 
+	docs["shortdesc"] = "XenAPI based fencing for the Citrix XenServer virtual machines."
+	docs["longdesc"] = "\
+fence_cxs is an I/O Fencing agent used on Citrix XenServer hosts. \
+It uses the XenAPI, supplied by Citrix, to establish an XML-RPC sesssion \
+to a XenServer host. Once the session is established, further XML-RPC \
+commands are issued in order to switch on, switch off, restart and query \
+the status of virtual machines running on the host." 
 	show_docs(options, docs)
 
 	xenSession = connect_and_login(options)

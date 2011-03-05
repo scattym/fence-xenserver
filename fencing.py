@@ -382,7 +382,7 @@ all_opt = {
         "session_url" : {
                 "getopt" : "s:",
                 "longopt" : "session-url",
-                "help" : "-s, --session-url                  URL to connect to XenServer on.",
+                "help" : "-s, --session-url              URL to connect to XenServer on.",
                 "required" : "1",
                 "shortdesc" : "The URL of the XenServer host.",
                 "order" : 1},
@@ -396,7 +396,7 @@ all_opt = {
         "uuid" : {
                 "getopt" : "U:",
                 "longopt" : "uuid",
-                "help" : "-U, --uuid                  UUID of the VM to fence.",
+                "help" : "-U, --uuid                     UUID of the VM to fence.",
                 "required" : "0",
                 "shortdesc" : "The UUID of the virtual machine to fence.",
                 "order" : 1}
