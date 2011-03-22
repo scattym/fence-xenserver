@@ -31,6 +31,8 @@
 # Please let me know if you are using this script so that I can work out
 # whether I should continue support for it. mattjclark0407 at hotmail dot com
 
+import sys
+sys.path.append("/usr/lib/fence")
 from fencing import *
 import XenAPI
 
