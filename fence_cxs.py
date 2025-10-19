@@ -176,7 +176,7 @@ def set_power_status(session, uuid, name, action):
 			vm_arr = session.xenapi.VM.get_by_name_label(name)
 			if( len(vm_arr) == 1 ):
 				vm = vm_arr[0]
-			else
+            else:
 				raise Exception("Multiple VM's have that name. Use UUID instead.")
 
 		if( vm != None ):
